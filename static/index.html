@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduSimplify — AI Study Assistant</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       HEADER
+  ══════════════════════════════════════════════════════════════════════════ -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-icon">📚</span>
+        <span class="brand-name">EduSimplify</span>
+      </div>
+      <span class="brand-badge">Powered by IBM Granite</span>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       HERO / INPUT VIEW
+  ══════════════════════════════════════════════════════════════════════════ -->
+  <section id="hero-section">
+    <div class="hero-inner">
+
+      <!-- Hero heading -->
+      <div class="hero-text">
+        <h1 class="hero-title">Understand Anything. Instantly.</h1>
+        <p class="hero-desc">
+          Paste any academic text — textbook paragraphs, lecture notes, definitions —
+          and let AI break it down into simplified explanations, key points, real-world
+          examples, practice questions and more. Available in English and Hindi.
+        </p>
+        <!-- Feature pills -->
+        <div class="feature-pills">
+          <span class="pill">💡 Simplify</span>
+          <span class="pill">🔑 Key Points</span>
+          <span class="pill">📖 Terms</span>
+          <span class="pill">🌍 Examples</span>
+          <span class="pill">📝 Summary</span>
+          <span class="pill">❓ Practice Qs</span>
+        </div>
+      </div>
+
+      <!-- Input card -->
+      <div class="input-card" id="input-card">
+        <div class="input-card-header">
+          <h2 class="input-card-title">Add Your Academic Content</h2>
+        </div>
+
+        <!-- ── Tab switcher ───────────────────────────────────────────── -->
+        <div class="input-tabs" role="tablist">
+          <button class="tab-btn active" id="tab-type" role="tab" aria-selected="true"
+                  aria-controls="type-panel">
+            ✏️ Type / Paste
+          </button>
+          <button class="tab-btn" id="tab-upload" role="tab" aria-selected="false"
+                  aria-controls="upload-panel">
+            📄 Upload File
+          </button>
+        </div>
+
+        <!-- ── Tab panel: type / paste ───────────────────────────────── -->
+        <div id="type-panel" role="tabpanel">
+          <div class="field">
+            <label for="content-input">Academic Text</label>
+            <textarea
+              id="content-input"
+              rows="8"
+              maxlength="5000"
+              placeholder="e.g. Photosynthesis is the process by which green plants and some other organisms use sunlight to synthesise nutrients from carbon dioxide and water…"
+            ></textarea>
+            <div class="char-counter">
+              <span id="char-count">0</span>&thinsp;/&thinsp;5000
+              <span id="char-warning" class="char-warning hidden"> — nearing limit</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Tab panel: upload ─────────────────────────────────────── -->
+        <div id="upload-panel" role="tabpanel">
+
+          <!-- Drop zone -->
+          <div class="drop-zone" id="drop-zone">
+            <input type="file" id="file-input" accept=".pdf,.txt" />
+            <span class="dz-icon">📂</span>
+            <p class="dz-label">Drop a file here or click to browse</p>
+            <p class="dz-sub">Supported: PDF (.pdf) or Plain Text (.txt) &nbsp;·&nbsp; Max 5 MB</p>
+          </div>
+
+          <!-- Processing spinner -->
+          <div class="upload-spinner-row" id="upload-spinner">
+            <div class="mini-spinner"></div>
+            Extracting text…
+          </div>
+
+          <!-- Upload error -->
+          <div id="upload-error" class="upload-error hidden"></div>
+
+          <!-- File info strip -->
+          <div class="file-info" id="file-info">
+            <span class="file-info-icon">📄</span>
+            <span class="file-info-name" id="file-info-name"></span>
+            <span class="file-info-size" id="file-info-size"></span>
+            <button class="file-info-clear" id="file-clear-btn" title="Remove file">✕</button>
+          </div>
+
+          <!-- Extracted text preview (editable) -->
+          <div class="extracted-preview" id="extracted-preview">
+            <span class="extracted-label">Extracted Text (editable)</span>
+            <textarea class="extracted-text" id="extracted-text" rows="6"
+              placeholder="Extracted text will appear here. You can edit it before generating."></textarea>
+          </div>
+
+          <!-- Quick-action buttons -->
+          <div class="doc-actions" id="doc-actions">
+            <span class="doc-actions-label">Generate from document</span>
+            <div class="doc-action-grid">
+              <button class="btn-doc-action" data-doc-endpoint="simplify">
+                💡 Simplify Entire Document
+              </button>
+              <button class="btn-doc-action" data-doc-endpoint="simplify-selection">
+                ✂️ Simplify Selected Section
+              </button>
+              <button class="btn-doc-action" data-doc-endpoint="summary">
+                📝 Generate Summary
+              </button>
+              <button class="btn-doc-action" data-doc-endpoint="keypoints">
+                🔑 Generate Key Points
+              </button>
+              <button class="btn-doc-action" data-doc-endpoint="questions">
+                ❓ Generate Questions
+              </button>
+            </div>
+          </div>
+
+        </div><!-- /upload-panel -->
+
+        <!-- ── Controls (shared by both tabs) ───────────────────────── -->
+        <div class="controls-row">
+          <div class="field">
+            <label for="level-select">Difficulty Level</label>
+            <select id="level-select">
+              <option value="Beginner">🟢 Beginner</option>
+              <option value="Intermediate" selected>🟡 Intermediate</option>
+              <option value="Advanced">🔴 Advanced</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="language-select">Output Language</label>
+            <select id="language-select">
+              <option value="English" selected>🇬🇧 English</option>
+              <option value="Hindi">🇮🇳 Hindi (हिंदी)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Validation error -->
+        <div id="input-error" class="input-error hidden"></div>
+
+        <!-- Primary CTA -->
+        <button class="btn btn-cta" id="simplify-btn" data-endpoint="simplify">
+          <span class="btn-icon">✨</span>
+          Simplify Now
+        </button>
+
+        <p class="input-hint">
+          After simplifying, individual Generate buttons appear for each feature below.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       RESULTS DASHBOARD  (hidden until first result arrives)
+  ══════════════════════════════════════════════════════════════════════════ -->
+  <section id="results-section" class="hidden">
+    <div class="results-inner">
+
+      <!-- Dashboard header -->
+      <div class="dashboard-header">
+        <h2 class="dashboard-title">Your Study Dashboard</h2>
+        <button class="btn btn-outline-sm" id="new-content-btn">
+          ← New Content
+        </button>
+      </div>
+
+      <!-- Result cards grid -->
+      <div class="results-grid">
+
+        <!-- 1. Simplified Explanation -->
+        <article class="result-card result-card--wide" id="card-simplify">
+          <div class="rc-head">
+            <span class="rc-icon">💡</span>
+            <h3 class="rc-title">Simplified Explanation</h3>
+            <button class="btn btn-rc" data-endpoint="simplify">Generate</button>
+          </div>
+          <div class="rc-body">
+            <div class="rc-loading hidden"><div class="mini-spinner"></div></div>
+            <div class="rc-output rc-placeholder">Click Generate to simplify the content.</div>
+          </div>
+          <div class="rc-foot hidden">
+            <button class="btn btn-copy">📋 Copy</button>
+          </div>
+        </article>
+
+        <!-- 2. Key Points -->
+        <article class="result-card" id="card-keypoints">
+          <div class="rc-head">
+            <span class="rc-icon">🔑</span>
+            <h3 class="rc-title">Key Points</h3>
+            <button class="btn btn-rc" data-endpoint="keypoints">Generate</button>
+          </div>
+          <div class="rc-body">
+            <div class="rc-loading hidden"><div class="mini-spinner"></div></div>
+            <div class="rc-output rc-placeholder">Click Generate to extract key points.</div>
+          </div>
+          <div class="rc-foot hidden">
+            <button class="btn btn-copy">📋 Copy</button>
+          </div>
+        </article>
+
+        <!-- 3. Important Terms -->
+        <article class="result-card" id="card-terms">
+          <div class="rc-head">
+            <span class="rc-icon">📖</span>
+            <h3 class="rc-title">Important Terms</h3>
+            <button class="btn btn-rc" data-endpoint="terms">Generate</button>
+          </div>
+          <div class="rc-body">
+            <div class="rc-loading hidden"><div class="mini-spinner"></div></div>
+            <div class="rc-output rc-placeholder">Click Generate to explain difficult terms.</div>
+          </div>
+          <div class="rc-foot hidden">
+            <button class="btn btn-copy">📋 Copy</button>
+          </div>
+        </article>
+
+        <!-- 4. Real-World Example -->
+        <article class="result-card" id="card-example">
+          <div class="rc-head">
+            <span class="rc-icon">🌍</span>
+            <h3 class="rc-title">Real-World Example</h3>
+            <button class="btn btn-rc" data-endpoint="example">Generate</button>
+          </div>
+          <div class="rc-body">
+            <div class="rc-loading hidden"><div class="mini-spinner"></div></div>
+            <div class="rc-output rc-placeholder">Click Generate for a real-world analogy.</div>
+          </div>
+          <div class="rc-foot hidden">
+            <button class="btn btn-copy">📋 Copy</button>
+          </div>
+        </article>
+
+        <!-- 5. Summary -->
+        <article class="result-card" id="card-summary">
+          <div class="rc-head">
+            <span class="rc-icon">📝</span>
+            <h3 class="rc-title">Summary</h3>
+            <button class="btn btn-rc" data-endpoint="summary">Generate</button>
+          </div>
+          <div class="rc-body">
+            <div class="rc-loading hidden"><div class="mini-spinner"></div></div>
+            <div class="rc-output rc-placeholder">Click Generate for a short summary.</div>
+          </div>
+          <div class="rc-foot hidden">
+            <button class="btn btn-copy">📋 Copy</button>
+          </div>
+        </article>
+
+        <!-- 6. Practice Questions -->
+        <article class="result-card result-card--wide" id="card-questions">
+          <div class="rc-head">
+            <span class="rc-icon">❓</span>
+            <h3 class="rc-title">Practice Questions</h3>
+            <button class="btn btn-rc" data-endpoint="questions">Generate</button>
+          </div>
+          <div class="rc-body">
+            <div class="rc-loading hidden"><div class="mini-spinner"></div></div>
+            <div class="rc-output rc-placeholder">Click Generate for practice questions with answers.</div>
+          </div>
+          <div class="rc-foot hidden">
+            <button class="btn btn-copy">📋 Copy</button>
+          </div>
+        </article>
+
+        <!-- 7. Follow-Up Q&A -->
+        <article class="result-card result-card--wide result-card--followup" id="card-followup">
+          <div class="rc-head">
+            <span class="rc-icon">🤔</span>
+            <h3 class="rc-title">Ask a Follow-Up Question</h3>
+          </div>
+          <p class="rc-desc">Still confused? Ask a specific question about the content and get a direct answer.</p>
+          <div class="followup-row">
+            <input
+              type="text"
+              id="followup-input"
+              maxlength="500"
+              placeholder="e.g. What is the difference between X and Y?"
+            />
+            <button class="btn btn-ask" id="followup-btn">Ask</button>
+          </div>
+          <div class="rc-body">
+            <div class="rc-loading hidden"><div class="mini-spinner"></div></div>
+            <div class="rc-output rc-placeholder" id="followup-output">Your answer will appear here.</div>
+          </div>
+          <div class="rc-foot hidden" id="followup-foot">
+            <button class="btn btn-copy">📋 Copy</button>
+          </div>
+        </article>
+
+      </div><!-- /results-grid -->
+    </div><!-- /results-inner -->
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       FOOTER
+  ══════════════════════════════════════════════════════════════════════════ -->
+  <footer class="site-footer">
+    <p>
+      EduSimplify &mdash; AICTE 2026 Internship Project &nbsp;&bull;&nbsp;
+      Problem Statement No.&nbsp;24 &nbsp;&bull;&nbsp;
+      Built with IBM Granite on watsonx.ai
+    </p>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

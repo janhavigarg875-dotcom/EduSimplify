@@ -304,4 +304,3 @@ def _extract_pdf(file_bytes: bytes) -> str:
             pages.append(page_text)
 
     return "\n\n".join(pages)
-
