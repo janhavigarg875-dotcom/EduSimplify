@@ -1,0 +1,5 @@
+flask>=3.0
+python-dotenv>=1.0
+ibm-watsonx-ai>=1.0
+pypdf>=4.0
+gunicorn>=21.0
